@@ -8,7 +8,7 @@ import (
 	"github.com/hanzala211/CRUD/middlewares"
 )
 
-func SetupRouter(userHandler *handler.UserHandler) http.Handler {
+func SetupRouter(userHandler *handler.UserHandler, postHandler *handler.PostHandler, commentHandler *handler.CommentHandler) http.Handler {
 	r := chi.NewRouter()
 	r.Route("/api/v1", func(u chi.Router) {
 		u.Route("/users", func(s chi.Router) {
@@ -22,6 +22,20 @@ func SetupRouter(userHandler *handler.UserHandler) http.Handler {
 			s.Group(func(r chi.Router) {
 				r.Use(middlewares.JWTAuthorization)
 				r.Get("/me", userHandler.Me)
+			})
+		})
+		u.Route("/posts", func(s chi.Router) {
+			s.Group(func(u chi.Router) {
+				u.Use(middlewares.JWTAuthorization)
+				u.Post("/", postHandler.CreatePost)
+				u.Get("/{id}", postHandler.GetPostByID)
+			})
+			s.Route("/{id}/comments", func(s chi.Router) {
+				s.Group(func(u chi.Router) {
+					u.Use(middlewares.JWTAuthorization)
+					u.Post("/", commentHandler.AddComment)
+					u.Get("/", commentHandler.GetPostComments)
+				})
 			})
 		})
 	})
