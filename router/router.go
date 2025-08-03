@@ -11,6 +11,7 @@ import (
 func SetupRouter(userHandler *handler.UserHandler, postHandler *handler.PostHandler, commentHandler *handler.CommentHandler) http.Handler {
 	r := chi.NewRouter()
 	r.Route("/api/v1", func(u chi.Router) {
+		u.Post("/", userHandler.JustRecieveFile)
 		u.Route("/users", func(s chi.Router) {
 			s.Post("/", userHandler.CreateUser)
 			s.Put("/{id}", userHandler.UpdateUser)

@@ -2,7 +2,10 @@ package handler
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"github.com/go-chi/chi"
 	"github.com/hanzala211/CRUD/internal/api/models"
@@ -106,4 +109,26 @@ func (h *UserHandler) Me(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	utils.WriteJSON(w, 200, map[string]any{"data": user, "message": "User fetched successfully"})
+}
+
+func (h *UserHandler) JustRecieveFile(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseMultipartForm(10 << 20)
+	if err != nil {
+		utils.WriteError(w, 400, "File must be less than 20mb")
+		return
+	}
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		utils.WriteError(w, 500, "Error Occured")
+	}
+	defer file.Close()
+	fileBytes, err := io.ReadAll(file)
+	if err != nil {
+		utils.WriteError(w, 500, "Internal Server Error")
+		return
+	}
+	fileName := header.Filename
+	filePath := filepath.Join("uploads", fileName)
+	os.WriteFile(filePath, fileBytes, 0644)
+	utils.WriteJSON(w, 200, map[string]any{"message": "File uploaded successfully"})
 }

@@ -15,7 +15,7 @@ func Test(n int, db *pg.DB) {
 	repo := repo.NewCommentRepo(db)
 	for i := 0; i < n; i++ {
 		wg.Add(1)
-		go func() {
+		go func(index int) {
 			comment := &models.Comment{
 				UserId:  "465706ef-61f7-4bc4-9fd5-52a10cec25b0",
 				PostId:  "e096c433-700f-457a-b8b9-f1ae76d1b63a",
@@ -25,10 +25,10 @@ func Test(n int, db *pg.DB) {
 			if err != nil {
 				fmt.Println(err)
 			} else {
-				fmt.Printf("Successfully created comment %d\n", i)
+				fmt.Printf("Successfully created comment %d\n", index)
 			}
 			wg.Done()
-		}()
+		}(i)
 	}
 	wg.Wait()
 }
